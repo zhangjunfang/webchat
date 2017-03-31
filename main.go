@@ -101,10 +101,8 @@ func TickConnnection(conn net.Conn, c chan string) {
 func Connnection(conn net.Conn) {
 	if conn != nil {
 		b := make([]byte, 64)
-		//var buff bytes.Buffer
 		for {
 			n, err := conn.Read(b)
-			//n, err := conn.Read(buff.Bytes())
 			if n == 0 && err == nil {
 				continue
 			}
@@ -188,8 +186,7 @@ func DataStore(datas []string) {
 	//stmt, err := db.Prepare("INSERT into im_message(name) values(?)")
 	//stmt, err := db.PrepareContext(context.Background(), "INSERT into im_message(name) values(?)")
 	checkErr(err)
-	t := time.Now()
-	t.Add(12 * 24 * time.Hour)
+	t := time.Now().Add(12 * 24 * time.Hour)
 	//|001|002|003|004|005|006|
 	senderId, err := strconv.Atoi(datas[3])
 	checkErr(err)
