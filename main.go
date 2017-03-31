@@ -45,18 +45,58 @@ func creatPool() (c redis.Conn, err error) {
 }
 func main() {
 	runtime.GOMAXPROCS(4)
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go MainService(wg)
+	go TickTime(wg)
+	wg.Wait()
+}
+func MainService(wg sync.WaitGroup) {
+
 	l, err := net.Listen("tcp", ":9999")
 	defer l.Close()
 	if err != nil {
 		fmt.Printf("Failure to listen: %s\n", err.Error())
 		return
 	}
+	wg.Done()
 	for {
 		if conn, err := l.Accept(); err == nil {
 			go Connnection(conn) //new thread
 		}
 	}
+}
+func TickTime(wg sync.WaitGroup) {
+	l, err := net.Listen("tcp", ":9998")
+	defer l.Close()
+	if err != nil {
+		fmt.Printf("Failure to listen: %s\n", err.Error())
+		return
+	}
+	wg.Done()
+	c := make(chan string, 10)
+	for {
+		if conn, err := l.Accept(); err == nil {
+			go TickConnnection(conn, c) //new thread
+		}
+	}
 
+}
+func TickConnnection(conn net.Conn, c chan string) {
+	t1 := time.NewTimer(time.Second * 2)
+	b := make([]byte, 8)
+	n, err := conn.Read(b)
+	checkErr(err)
+	c <- string(b[:n])
+	for {
+		select {
+		case msg := <-c:
+			fmt.Println(msg)
+		case <-t1.C:
+			conn.Write([]byte("|4|1|"))
+			t1.Reset(time.Second * 2)
+		}
+	}
 }
 func Connnection(conn net.Conn) {
 	if conn != nil {
