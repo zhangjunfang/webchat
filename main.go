@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"net"
 	"runtime"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/donnie4w/go-logger/logger"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 	//"github.com/henrylee2cn/mahonia"
@@ -57,22 +55,6 @@ func main() {
 	wg.Wait()
 }
 
-func Ticker4Second(second int, function func()) {
-	defer func() {
-		if err := recover(); err != nil {
-			logger.Error("Ticker4Second error :", err)
-			logger.Error(string(debug.Stack()))
-		}
-	}()
-	time.Sleep(time.Duration(second) * time.Second)
-	timer := time.NewTicker(time.Duration(second) * time.Second)
-	for {
-		select {
-		case <-timer.C:
-			go function()
-		}
-	}
-}
 func MainService(wg sync.WaitGroup) {
 
 	l, err := net.Listen("tcp", ":9999")
