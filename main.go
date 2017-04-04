@@ -14,6 +14,8 @@ import (
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 	//"github.com/henrylee2cn/mahonia"
+	"github.com/zhangjunfang/webchat/myerror"
+	"github.com/zhangjunfang/webchat/mylog"
 )
 
 var (
@@ -48,6 +50,7 @@ func main() {
 	//	Ticker4Second(4, func() {
 	//		fmt.Println("Ticker4Second::=========", 11111)
 	//	})
+	mylog.Info("sdfsdfsdfsdf")
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go MainService(wg)
@@ -90,7 +93,7 @@ func TickConnnection(conn net.Conn, c chan string) {
 	t1 := time.NewTimer(time.Second * 2)
 	b := make([]byte, 8)
 	n, err := conn.Read(b)
-	checkErr(err)
+	myerror.checkErr(err)
 	c <- string(b[:n])
 	for {
 		select {
@@ -189,33 +192,28 @@ func DataStore(datas []string) {
 	stmt, err := db.PrepareContext(context.Background(), "INSERT into im_message(senderId,receiverId,messageType,messageContent,createDate,expirationDate) values(?,?,?,?,?,?)")
 	//stmt, err := db.Prepare("INSERT into im_message(name) values(?)")
 	//stmt, err := db.PrepareContext(context.Background(), "INSERT into im_message(name) values(?)")
-	checkErr(err)
+	myerror.checkErr(err)
 	t := time.Now().Add(12 * 24 * time.Hour)
 	//|001|002|003|004|005|006|
 	senderId, err := strconv.Atoi(datas[3])
-	checkErr(err)
+	myerror.checkErr(err)
 	receiverId, err := strconv.Atoi(datas[2])
-	checkErr(err)
+	myerror.checkErr(err)
 	messageType, err := strconv.Atoi(datas[1])
-	checkErr(err)
+	myerror.checkErr(err)
 	//fmt.Println(senderId, receiverId, byte(messageType), datas[5], "===============", time.Now(), t)
 	//stmt.Exec(datas[3], datas[2], datas[1], datas[5], time.Now(), t)
 	//stmt.ExecContext(context.Background(), datas[3], datas[2], datas[1], datas[5], time.Now(), t)
 	res, err := stmt.Exec(senderId, receiverId, byte(messageType), datas[5], time.Now(), t)
 	//	res, err := stmt.Exec(senderId)
 	//	stmt.Exec(senderId)
-	checkErr(err)
+	myerror.checkErr(err)
 	id, err := res.LastInsertId()
-	checkErr(err)
+	myerror.checkErr(err)
 	fmt.Println(id)
 	tx.Commit()
 	stmt.Close()
 }
 func DataSend(conn net.Conn, id string) {
 	conn.Write([]byte(id + ":::::::::::::::::::::::ok\r\n"))
-}
-func checkErr(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
