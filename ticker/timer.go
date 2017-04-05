@@ -1,14 +1,15 @@
 package ticker
 
 import (
-	"fmt"
 	"time"
+
+	log "bloggithub.com/YoungPioneers/blog4go"
 )
 
 func AsynTickerForSecond(second int, function func()) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("Ticker4Second error :", err)
+			log.Info(" asyn Ticker4Second error :", err)
 		}
 	}()
 	time.Sleep(time.Duration(second) * time.Second)
@@ -23,7 +24,8 @@ func AsynTickerForSecond(second int, function func()) {
 func SynTickerForSecond(second int, function func()) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("Ticker4Second error :", err)
+
+			log.Info("syn  Ticker4Second error :", err)
 		}
 	}()
 	time.Sleep(time.Duration(second) * time.Second)
