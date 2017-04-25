@@ -7,10 +7,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/zhangjunfang/webchat/mydb"
 	"github.com/zhangjunfang/webchat/myerror"
+	"github.com/zhangjunfang/webchat/redis"
+	//"github.com/henrylee2cn/mahonia"  //转码问题    其它编码到utf-8
 )
 
 func DataSend(conn net.Conn, id string) {
+	//这里需要判断是否存在信息   存在则发送
 	conn.Write([]byte(id + ":::::::::::::::::::::::ok\r\n"))
 }
 func ParseData(conn net.Conn, data string) {
@@ -21,8 +25,8 @@ func ParseData(conn net.Conn, data string) {
 		switch len(array) {
 		case 8:
 			{
-				RedisConn(conn, array[3]+"-"+array[2]) //redis  sendId+ revicerId==>conn
-				go DataStore(array)
+				redis.RedisConn(conn, array[3]+"-"+array[2]) //redis  sendId+ revicerId==>conn
+				go mydb.DataStore(array)
 				go DataSend(conn, array[3])
 				break
 			}
@@ -40,10 +44,9 @@ func Connnection(conn net.Conn) {
 		for {
 			n, err := conn.Read(b)
 			if n == 0 && err == nil {
-				continue
+				break
 			}
 			if err != nil {
-				fmt.Printf("%s  ==== %d  :  %T \n", string(b[:n]), n, err)
 				conn.Close()
 				return
 			}
@@ -89,6 +92,7 @@ func TickTime(wg sync.WaitGroup) {
 	l, err := net.Listen("tcp", ":9998")
 	defer l.Close()
 	if err != nil {
+		wg.Done()
 		fmt.Printf("Failure to listen: %s\n", err.Error())
 		return
 	}
@@ -102,11 +106,11 @@ func TickTime(wg sync.WaitGroup) {
 
 }
 func MainService(wg sync.WaitGroup) {
-
 	l, err := net.Listen("tcp", ":9999")
 	defer l.Close()
 	if err != nil {
 		fmt.Printf("Failure to listen: %s\n", err.Error())
+		wg.Done()
 		return
 	}
 	wg.Done()

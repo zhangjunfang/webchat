@@ -12,6 +12,8 @@ var (
 	pools *redis.Pool
 )
 
+const MaxIdle = 100
+
 func init() {
 	pools = redis.NewPool(creatPool, MaxIdle)
 

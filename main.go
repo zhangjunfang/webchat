@@ -7,19 +7,17 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/garyburd/redigo/redis"
+	//"github.com/garyburd/redigo/redis"
 
 	//"github.com/henrylee2cn/mahonia"
 	log "github.com/YoungPioneers/blog4go"
+	"github.com/zhangjunfang/webchat/connect"
 )
 
 var (
-	pools *redis.Pool
 	dbErr error
 	db    *sql.DB
 )
-
-const MaxIdle = 100
 
 type ImLog struct {
 }
@@ -45,15 +43,11 @@ func LogFunc() {
 }
 
 func main() {
-	runtime.GOMAXPROCS(4)
-	//	Ticker4Second(4, func() {
-	//		fmt.Println("Ticker4Second::=========", 11111)
-	//	})
-
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	LogFunc()
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go MainService(wg)
-	go TickTime(wg)
+	go connect.MainService(wg)
+	go connect.TickTime(wg)
 	wg.Wait()
 }
